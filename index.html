@@ -73,7 +73,7 @@
             voices = speechSynthesis.getVoices()
                 .filter(voice =>
                     voice.lang.startsWith('en') &&
-                    !['zira', 'mark', 'david', 'hong kong', 'india', 'kenya', 'nigeria', 'philippines', 'singapore', 'south africa', 'tanzania'].some(bad =>
+                    !['zira', 'mark', 'david', 'hong kong', 'hongkong', 'india', 'kenya', 'nigeria', 'philippines', 'singapore', 'south africa', 'tanzania'].some(bad =>
                         voice.name.toLowerCase().includes(bad)
                     )
                 );
