@@ -14,18 +14,21 @@
         .article {
             display: flex;
             align-items: center;
-            gap: 1em;
             margin-bottom: 1.5em;
+        }
+
+        button {
+            margin-right: 1em;
+            padding: 0.4em 1em;
+            font-size: 1em;
+            cursor: pointer;
+            flex-shrink: 0; /* prevents the button from shrinking */
         }
 
         .title {
             font-weight: bold;
-        }
-
-        button {
-            padding: 0.4em 1em;
-            font-size: 1em;
-            cursor: pointer;
+            flex: 1; /* allows title to take remaining space */
+            word-break: break-word; /* wraps long words if needed */
         }
     </style>
 </head>
