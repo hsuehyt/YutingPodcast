@@ -73,9 +73,9 @@
             voices = speechSynthesis.getVoices()
                 .filter(voice =>
                     voice.lang.startsWith('en') &&
-                    !voice.name.toLowerCase().includes('zira') &&
-                    !voice.name.toLowerCase().includes('david') &&
-                    !voice.name.toLowerCase().includes('mark') &&
+                    !['zira', 'mark', 'david'].some(bad =>
+                        voice.name.toLowerCase().includes(bad)
+                    )
                 );
 
             voiceSelect.innerHTML = '';
@@ -92,6 +92,7 @@
                 voiceSelect.value = savedVoiceIndex;
             }
         }
+
 
         voiceSelect.addEventListener('change', () => {
             localStorage.setItem('selectedVoiceIndex', voiceSelect.value);
