@@ -26,7 +26,12 @@
         const voiceSelect = document.getElementById('voiceSelect');
 
         function populateVoices() {
-            voices = speechSynthesis.getVoices().filter(voice => voice.lang.startsWith('en'));
+            voices = speechSynthesis.getVoices()
+                .filter(voice =>
+                    voice.lang.startsWith('en') &&
+                    !['Microsoft Mark', 'Microsoft Zira', 'Microsoft David'].includes(voice.name)
+                );
+
             voiceSelect.innerHTML = '';
 
             voices.forEach((voice, index) => {
@@ -36,11 +41,23 @@
                 voiceSelect.appendChild(option);
             });
 
-            // Load saved voice index from localStorage
+            // Restore saved voice selection if still valid
             const savedVoiceIndex = localStorage.getItem('selectedVoiceIndex');
             if (savedVoiceIndex && voices[savedVoiceIndex]) {
                 voiceSelect.value = savedVoiceIndex;
             }
+        }
+
+        function cleanTextForSpeech(text) {
+            return text
+                .replace(/`{1,3}[^`]*`{1,3}/g, '')                  // inline or block code
+                .replace(/!\[.*?\]\(.*?\)/g, '')                    // image markdown
+                .replace(/\[.*?\]\(.*?\)/g, '')                     // link markdown
+                .replace(/[*_~`#>\[\]()-]/g, '')                    // markdown symbols
+                .replace(/#+\s/g, '')                               // heading #
+                .replace(/https?:\/\/\S+/g, '')                     // URLs
+                .replace(/\s{2,}/g, ' ')                            // extra whitespace
+                .trim();
         }
 
         // Store selected voice when user changes it
