@@ -1,0 +1,33 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Yuting Podcast</title>
+</head>
+<body>
+    <h1>Yuting Podcast - Read Aloud</h1>
+
+    <button onclick="readAloud('articles/2023_0330_01_Bonds_Price_Under_Trump_Tariffs.txt')">
+        🔊 Read: Bonds Price Under Trump Tariffs
+    </button>
+
+    <button onclick="readAloud('articles/2023_0330_02_Debt_Risk_Under_Trump_Tariffs.txt')">
+        🔊 Read: Debt Risk Under Trump Tariffs
+    </button>
+
+    <script>
+    async function readAloud(filePath) {
+      try {
+        const response = await fetch(filePath);
+        const text = await response.text();
+        const utterance = new SpeechSynthesisUtterance(text);
+        speechSynthesis.cancel(); // Stop any previous speech
+        speechSynthesis.speak(utterance);
+      } catch (error) {
+        alert("Failed to load article: " + error);
+      }
+    }
+    </script>
+</body>
+</html>
