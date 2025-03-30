@@ -12,13 +12,20 @@
         }
 
         .article {
-            margin-bottom: 1.5em;
-            text-align: left;
+            display: flex;
+            align-items: center;
+            justify-content: flex-start;
+            margin-bottom: 1em;
+        }
+
+        .title {
+            flex: 1;
+            font-weight: bold;
         }
 
         button {
-            margin-top: 0.5em;
-            padding: 0.5em 1em;
+            margin-left: 1em;
+            padding: 0.4em 0.8em;
             font-size: 1em;
             cursor: pointer;
         }
@@ -28,14 +35,14 @@
     <h1>Yuting Podcast - Read Aloud</h1>
 
     <div class="article">
-        <strong>Bonds Price Under Trump Tariffs</strong><br />
+        <div class="title">Bonds Price Under Trump Tariffs</div>
         <button onclick="toggleRead('articles/2023_0330_01_Bonds_Price_Under_Trump_Tariffs.txt', this)">
             ▶️ Play
         </button>
     </div>
 
     <div class="article">
-        <strong>Debt Risk Under Trump Tariffs</strong><br />
+        <div class="title">Debt Risk Under Trump Tariffs</div>
         <button onclick="toggleRead('articles/2023_0330_02_Debt_Risk_Under_Trump_Tariffs.txt', this)">
             ▶️ Play
         </button>
@@ -44,12 +51,13 @@
     <script>
         let currentUtterance = null;
         let isPlaying = false;
+        let currentButton = null;
 
         async function toggleRead(filePath, button) {
             if (isPlaying) {
                 speechSynthesis.cancel();
                 isPlaying = false;
-                button.textContent = '▶️ Play';
+                if (currentButton) currentButton.textContent = '▶️ Play';
                 return;
             }
 
@@ -59,12 +67,13 @@
                 currentUtterance = new SpeechSynthesisUtterance(text);
                 currentUtterance.onend = () => {
                     isPlaying = false;
-                    button.textContent = '▶️ Play';
+                    if (currentButton) currentButton.textContent = '▶️ Play';
                 };
 
                 speechSynthesis.speak(currentUtterance);
                 isPlaying = true;
                 button.textContent = '⏸ Pause';
+                currentButton = button;
             } catch (error) {
                 alert("Failed to load article: " + error);
             }
