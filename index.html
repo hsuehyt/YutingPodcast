@@ -1,8 +1,52 @@
-﻿<body>
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Yuting Podcast</title>
+    <style>
+        body {
+            font-family: sans-serif;
+            padding: 2em;
+            max-width: 700px;
+        }
+
+        .article {
+            display: flex;
+            align-items: center;
+            margin-bottom: 1.5em;
+        }
+
+        button {
+            margin-right: 1em;
+            padding: 0.4em 1em;
+            font-size: 1em;
+            cursor: pointer;
+            flex-shrink: 0;
+        }
+
+        .title {
+            font-weight: bold;
+            flex: 1;
+            word-break: break-word;
+        }
+
+        label {
+            font-weight: bold;
+        }
+
+        select {
+            margin-bottom: 2em;
+            font-size: 1em;
+            padding: 0.4em;
+        }
+    </style>
+</head>
+<body>
     <h1>Yuting's Podcast</h1>
 
-    <label for="voiceSelect"><strong>Select Voice:</strong></label>
-    <select id="voiceSelect" style="margin-bottom: 2em;"></select>
+    <label for="voiceSelect">Select Voice:</label>
+    <select id="voiceSelect"></select>
 
     <div class="article">
         <button onclick="toggleRead('articles/2023_0330_01_Bonds_Price_Under_Trump_Tariffs.txt', this)">
@@ -29,7 +73,10 @@
             voices = speechSynthesis.getVoices()
                 .filter(voice =>
                     voice.lang.startsWith('en') &&
-                    !['Microsoft Mark', 'Microsoft Zira', 'Microsoft David'].includes(voice.name)
+                    !voice.name.toLowerCase().includes('zira') &&
+                    !voice.name.toLowerCase().includes('david') &&
+                    !voice.name.toLowerCase().includes('mark') &&
+                    !voice.name.toLowerCase().includes('microsoft')
                 );
 
             voiceSelect.innerHTML = '';
@@ -41,33 +88,30 @@
                 voiceSelect.appendChild(option);
             });
 
-            // Restore saved voice selection if still valid
             const savedVoiceIndex = localStorage.getItem('selectedVoiceIndex');
             if (savedVoiceIndex && voices[savedVoiceIndex]) {
                 voiceSelect.value = savedVoiceIndex;
             }
         }
 
+        voiceSelect.addEventListener('change', () => {
+            localStorage.setItem('selectedVoiceIndex', voiceSelect.value);
+        });
+
+        speechSynthesis.onvoiceschanged = populateVoices;
+        populateVoices();
+
         function cleanTextForSpeech(text) {
             return text
                 .replace(/`{1,3}[^`]*`{1,3}/g, '')                  // inline or block code
                 .replace(/!\[.*?\]\(.*?\)/g, '')                    // image markdown
                 .replace(/\[.*?\]\(.*?\)/g, '')                     // link markdown
-                .replace(/[*_~`#>\[\]()-]/g, '')                    // markdown symbols
+                .replace(/[*_~`#>\[\]()\-]/g, '')                   // markdown symbols
                 .replace(/#+\s/g, '')                               // heading #
                 .replace(/https?:\/\/\S+/g, '')                     // URLs
                 .replace(/\s{2,}/g, ' ')                            // extra whitespace
                 .trim();
         }
-
-        // Store selected voice when user changes it
-        voiceSelect.addEventListener('change', () => {
-            localStorage.setItem('selectedVoiceIndex', voiceSelect.value);
-        });
-
-        // Some browsers load voices async
-        speechSynthesis.onvoiceschanged = populateVoices;
-        populateVoices();
 
         async function toggleRead(filePath, button) {
             if (isPlaying) {
@@ -79,10 +123,10 @@
 
             try {
                 const response = await fetch(filePath);
-                const text = await response.text();
+                let text = await response.text();
+                text = cleanTextForSpeech(text);
                 currentUtterance = new SpeechSynthesisUtterance(text);
 
-                // Set voice from dropdown
                 const selectedVoice = voices[voiceSelect.value];
                 if (selectedVoice) {
                     currentUtterance.voice = selectedVoice;
@@ -102,5 +146,5 @@
             }
         }
     </script>
-
 </body>
+</html>
