@@ -45,126 +45,17 @@
 <body>
     <h1>Yuting's Podcast</h1>
 
+    <!-- Voice selection dropdown -->
     <label for="voiceSelect">Select Voice:</label>
     <select id="voiceSelect"></select>
 
+    <!-- Dynamic article list will be inserted here -->
     <div id="articlesContainer"></div>
 
-    <script>
-        let voices = [];
-        let currentUtterance = null;
-        let isPlaying = false;
-        let currentButton = null;
-        const voiceSelect = document.getElementById('voiceSelect');
+    <!-- Split JavaScript files -->
+    <script src="utils.js"></script>
+    <script src="speech.js"></script>
+    <script src="articles.js"></script>
 
-        function populateVoices() {
-            voices = speechSynthesis.getVoices()
-                .filter(voice =>
-                    voice.lang.startsWith('en') &&
-                    !['zira', 'mark', 'david', 'hong kong', 'hongkong', 'india', 'kenya', 'nigeria', 'philippines', 'singapore', 'south africa', 'tanzania'].some(bad =>
-                        voice.name.toLowerCase().includes(bad)
-                    )
-                );
-
-            voiceSelect.innerHTML = '';
-
-            voices.forEach((voice, index) => {
-                const option = document.createElement('option');
-                option.value = index;
-                option.textContent = `${voice.name} (${voice.lang})${voice.default ? ' [default]' : ''}`;
-                voiceSelect.appendChild(option);
-            });
-
-            const savedVoiceIndex = localStorage.getItem('selectedVoiceIndex');
-            if (savedVoiceIndex && voices[savedVoiceIndex]) {
-                voiceSelect.value = savedVoiceIndex;
-            }
-        }
-
-        voiceSelect.addEventListener('change', () => {
-            localStorage.setItem('selectedVoiceIndex', voiceSelect.value);
-        });
-
-        speechSynthesis.onvoiceschanged = populateVoices;
-        populateVoices();
-
-        function cleanTextForSpeech(text) {
-            return text
-                .replace(/`{1,3}[^`]*`{1,3}/g, '')
-                .replace(/!\[.*?\]\(.*?\)/g, '')
-                .replace(/\[.*?\]\(.*?\)/g, '')
-                .replace(/[*_~`#>\[\]()\-]/g, '')
-                .replace(/#+\s/g, '')
-                .replace(/https?:\/\/\S+/g, '')
-                .replace(/\s{2,}/g, ' ')
-                .trim();
-        }
-
-        async function toggleRead(filePath, button) {
-            if (isPlaying) {
-                speechSynthesis.cancel();
-                isPlaying = false;
-                if (currentButton) currentButton.textContent = '▶️ Play';
-                return;
-            }
-
-            try {
-                const response = await fetch(filePath);
-                let text = await response.text();
-                text = cleanTextForSpeech(text);
-                currentUtterance = new SpeechSynthesisUtterance(text);
-
-                const selectedVoice = voices[voiceSelect.value];
-                if (selectedVoice) {
-                    currentUtterance.voice = selectedVoice;
-                }
-
-                currentUtterance.onend = () => {
-                    isPlaying = false;
-                    if (currentButton) currentButton.textContent = '▶️ Play';
-                };
-
-                speechSynthesis.speak(currentUtterance);
-                isPlaying = true;
-                button.textContent = '⏸ Pause';
-                currentButton = button;
-            } catch (error) {
-                alert("Failed to load article: " + error);
-            }
-        }
-
-        async function loadArticles() {
-            const container = document.getElementById('articlesContainer');
-            const apiUrl = 'https://api.github.com/repos/hsuehyt/YutingPodcast/contents/articles';
-
-            try {
-                const res = await fetch(apiUrl);
-                const files = await res.json();
-
-                files
-                    .filter(file => file.name.endsWith('.txt'))
-                    .sort((a, b) => b.name.localeCompare(a.name)) // Newest first
-                    .forEach(file => {
-                        const title = file.name
-                            .replace('.txt', '')
-                            .replace(/_/g, ' ')
-                            .replace(/(\d{4}) (\d{4}) (\d{2})/, (_, y, m, d) => `${y}.${m}.${d}`);
-
-                        const articleDiv = document.createElement('div');
-                        articleDiv.className = 'article';
-                        articleDiv.innerHTML = `
-                                <button onclick="toggleRead('${file.path}', this)">▶️ Play</button>
-                                <div class="title">${title}</div>
-                            `;
-                        container.appendChild(articleDiv);
-                    });
-            } catch (err) {
-                console.error('Failed to load article list:', err);
-                container.innerHTML = '<p>Failed to load articles.</p>';
-            }
-        }
-
-        loadArticles();
-    </script>
 </body>
 </html>
