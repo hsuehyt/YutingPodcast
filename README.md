@@ -1,76 +1,101 @@
-# 🎧 Yuting Podcast
+# 🎙️ Yuting's Podcast
 
-🗣️ A simple text-to-speech web player for podcast-style articles.  
-🎧 Try it live: [hsuehyt.github.io/YutingPodcast](https://hsuehyt.github.io/YutingPodcast)
+A simple, self-hosted podcast reader that converts text articles into spoken voice using the browser's built-in Text-to-Speech (TTS) engine.
 
----
+## 🌐 Live Site
 
-## 📚 About
-
-**Yuting Podcast** is a lightweight, browser-based voice reader for articles written in plain text. Users can:
-
-- 🔊 Select from natural-sounding English voices
-- ▶️ Play/pause articles using browser text-to-speech
-- 🧼 Automatically clean up markdown symbols and links for smoother narration
-- 💾 Remember your preferred voice across sessions
+Access it on GitHub Pages:  
+**https://hsuehyt.github.io/YutingPodcast/**
 
 ---
 
-## 🌐 Live Demo
+## 📁 Project Structure
 
-[👉 Click here to try it](https://hsuehyt.github.io/YutingPodcast)
-
----
-
-## 🚀 How to Use
-
-1. Open the [live demo](https://hsuehyt.github.io/YutingPodcast)
-2. Use the **dropdown menu** to select your preferred English voice
-3. Click the **Play button** next to any article title
-4. The browser will read the article out loud
-5. Click again to **pause/stop**
+```
+.
+├── index.html         # Main HTML file
+├── articles/          # .txt files (podcast scripts)
+├── utils.js           # Shared utility functions
+├── speech.js          # Voice setup and speech logic
+├── articles.js        # Auto-loads and displays articles
+```
 
 ---
 
-## 🧠 Features
+## ✅ Compatibility
 
-- ✔️ Voice selector (filters out robotic and non-English voices)
-- ✔️ Clean speech output (removes markdown, links, symbols)
-- ✔️ Responsive and minimalist UI
-- ✔️ Supports adding more `.txt` articles in the `articles/` folder
+| Platform      | Supported | Notes                                |
+|---------------|-----------|--------------------------------------|
+| Windows       | ✅ Yes    | Use Chrome, Edge, or Firefox         |
+| macOS         | ✅ Yes    | Works on Safari and Chrome           |
+| iPhone / iPad | ✅ Yes    | Best in Safari                       |
+| Android       | ✅ Yes    | Use Chrome for full voice support    |
 
----
-
-## 🛠️ Requirements
-
-No installation needed.  
-Runs entirely in the browser using:
-
-- ✅ HTML5
-- ✅ JavaScript Web Speech API (`speechSynthesis`)
-- ✅ GitHub Pages for hosting
+> 🔉 Note: Available voices depend on device + browser.
 
 ---
 
-## 📦 Hosting
+### 📱 Samsung/Android Setup Tip (Recommended)
 
-This project is hosted via **GitHub Pages**.  
-To deploy your own:
+If you're on a Samsung phone and the voices sound robotic or don't work well, switch to Google's speech engine:
 
-1. Fork the repo
-2. Enable GitHub Pages from the repository settings
-3. Set the source to `main` branch and `/ (root)`
-4. Done ✅
+```
+Settings → Accessibility → TalkBack → Settings → Text-to-speech → Preferred engine → 
+✔️ Speech Recognition and Synthesis from Google
+```
 
----
-
-## 📄 License
-
-MIT License — free to use, modify, and share.
+This gives you more natural-sounding voices when using the podcast player.
 
 ---
 
-## ✨ Author
+## 🚫 No Installation Required
 
-Built with ❤️ by [@hsuehyt](https://github.com/hsuehyt)
+Just open the `index.html` in any modern browser that supports speech synthesis.
 
+---
+
+## 🛠️ For Local Development
+
+1. Clone the repository:
+   ```bash
+   git clone https://github.com/hsuehyt/YutingPodcast.git
+   cd YutingPodcast
+   ```
+
+2. Run a local web server:
+   ```bash
+   # For Python 3
+   python -m http.server
+   ```
+
+3. Open your browser at:
+   ```
+   http://localhost:8000
+   ```
+
+---
+
+## ➕ How to Add New Articles
+
+1. Place a new `.txt` file into the `articles/` folder.
+2. Name it like:
+   ```
+   2025_0401_01_Episode_Title.txt
+   ```
+3. Commit and push to the `main` branch.
+4. It will show up on the homepage automatically.
+
+---
+
+## 💬 Tech Used
+
+- JavaScript + Web Speech API
+- GitHub Pages (for free hosting)
+- GitHub REST API (to fetch article list)
+
+---
+
+## 🧑‍💻 Author
+
+**Yuting Hsueh**  
+GitHub: [@hsuehyt](https://github.com/hsuehyt)
