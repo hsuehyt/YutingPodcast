@@ -1,8 +1,5 @@
-// articles.js
-
 import { toggleRead } from './speech.js';
 
-// Fetch article list from GitHub and render them in the container
 async function loadArticles() {
     const container = document.getElementById('articlesContainer');
     const apiUrl = 'https://api.github.com/repos/hsuehyt/YutingPodcast/contents/articles';
@@ -13,7 +10,7 @@ async function loadArticles() {
 
         files
             .filter(file => file.name.endsWith('.txt'))
-            .sort((a, b) => b.name.localeCompare(a.name)) // Newest first
+            .sort((a, b) => b.name.localeCompare(a.name))
             .forEach(file => {
                 const title = file.name
                     .replace('.txt', '')
@@ -41,5 +38,4 @@ async function loadArticles() {
     }
 }
 
-// Run it on load
 loadArticles();

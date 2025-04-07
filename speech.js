@@ -1,4 +1,3 @@
-// speech.js
 import {
     logToggleStart,
     logCancelSpeech,
@@ -19,7 +18,13 @@ let isPlaying = false;
 let currentButton = null;
 const voiceSelect = document.getElementById('voiceSelect');
 
-// Populate available speech synthesis voices
+// Resume audio context on mobile (Android Chrome workaround)
+window.addEventListener('touchstart', () => {
+    if (speechSynthesis && speechSynthesis.paused) {
+        speechSynthesis.resume();
+    }
+}, { once: true });
+
 function populateVoices() {
     voices = speechSynthesis.getVoices()
         .filter(voice =>
@@ -29,6 +34,16 @@ function populateVoices() {
         );
 
     voiceSelect.innerHTML = '';
+
+    if (voices.length === 0) {
+        console.warn("No available voices — speechSynthesis may not be supported or initialized.");
+        const option = document.createElement('option');
+        option.disabled = true;
+        option.selected = true;
+        option.textContent = 'No voices available';
+        voiceSelect.appendChild(option);
+        return;
+    }
 
     voices.forEach((voice, index) => {
         const option = document.createElement('option');
@@ -47,10 +62,13 @@ voiceSelect.addEventListener('change', () => {
     localStorage.setItem('selectedVoiceIndex', voiceSelect.value);
 });
 
-speechSynthesis.onvoiceschanged = populateVoices;
-populateVoices();
+if ('speechSynthesis' in window) {
+    speechSynthesis.onvoiceschanged = populateVoices;
+    populateVoices();
+} else {
+    console.warn("Speech synthesis not supported in this browser.");
+}
 
-// Toggle reading of article text
 export async function toggleRead(filePath, button) {
     logToggleStart();
 
@@ -64,7 +82,6 @@ export async function toggleRead(filePath, button) {
 
     try {
         logFetchingFile(filePath);
-
         const response = await fetch(filePath);
         let text = await response.text();
         logTextFetched(text);
@@ -73,7 +90,6 @@ export async function toggleRead(filePath, button) {
         logCleanedText(text);
 
         currentUtterance = new SpeechSynthesisUtterance(text);
-
         const selectedVoice = voices[voiceSelect.value];
         if (selectedVoice) {
             currentUtterance.voice = selectedVoice;

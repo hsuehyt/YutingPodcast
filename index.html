@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8" />
@@ -45,18 +45,18 @@
 <body>
     <h1>Yuting's Podcast</h1>
 
-    <!-- Voice selection dropdown -->
     <label for="voiceSelect">Select Voice:</label>
     <select id="voiceSelect"></select>
 
-    <!-- Dynamic article list will be inserted here -->
+    <button onclick="alert(speechSynthesis.getVoices().length > 0 ? 'TTS is supported' : 'No voices available')">
+        Check TTS Support
+    </button>
+
     <div id="articlesContainer"></div>
 
-    <!-- Split JavaScript files -->
     <script type="module" src="utils.js"></script>
     <script type="module" src="debugLogger.js"></script>
     <script type="module" src="speech.js"></script>
     <script type="module" src="articles.js"></script>
-
 </body>
 </html>
