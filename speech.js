@@ -12,6 +12,7 @@ import {
 
 import { cleanTextForSpeech } from './utils.js';
 
+const synth = window.speechSynthesis;
 let voices = [];
 let currentUtterance = null;
 let isPlaying = false;
@@ -20,23 +21,16 @@ const voiceSelect = document.getElementById('voiceSelect');
 
 // Resume speech synthesis engine on desktop or mobile user interaction
 function unlockAudioContext() {
-    if (speechSynthesis && speechSynthesis.paused) {
-        speechSynthesis.resume();
+    if (synth && synth.paused) {
+        synth.resume();
         console.log("speechSynthesis resumed");
     }
 }
 window.addEventListener('click', unlockAudioContext, { once: true });
 window.addEventListener('touchstart', unlockAudioContext, { once: true });
-window.addEventListener('touchstart', () => {
-    if (speechSynthesis && speechSynthesis.paused) {
-        speechSynthesis.resume();
-    }
-}, { once: true });
 
-function populateVoices(retries = 10) {
-    const allVoices = speechSynthesis.getVoices();
-
-    voices = allVoices.filter(voice =>
+function populateVoiceList() {
+    voices = synth.getVoices().filter(voice =>
         voice.lang.startsWith('en') &&
         !['zira', 'mark', 'david', 'hong kong', 'hongkong', 'india', 'kenya', 'nigeria', 'philippines', 'singapore', 'south africa', 'tanzania']
             .some(bad => voice.name.toLowerCase().includes(bad))
@@ -45,29 +39,6 @@ function populateVoices(retries = 10) {
     voiceSelect.innerHTML = '';
 
     if (voices.length === 0) {
-        if (retries > 0) {
-            console.warn("No voices yet, retrying populateVoices...");
-            return setTimeout(() => populateVoices(retries - 1), 200);
-        }
-
-        const option = document.createElement('option');
-        option.disabled = true;
-        option.selected = true;
-        option.textContent = 'No voices available';
-        voiceSelect.appendChild(option);
-        return;
-    }
-    voices = speechSynthesis.getVoices()
-        .filter(voice =>
-            voice.lang.startsWith('en') &&
-            !['zira', 'mark', 'david', 'hong kong', 'hongkong', 'india', 'kenya', 'nigeria', 'philippines', 'singapore', 'south africa', 'tanzania']
-                .some(bad => voice.name.toLowerCase().includes(bad))
-        );
-
-    voiceSelect.innerHTML = '';
-
-    if (voices.length === 0) {
-        console.warn("No available voices — speechSynthesis may not be supported or initialized.");
         const option = document.createElement('option');
         option.disabled = true;
         option.selected = true;
@@ -76,36 +47,44 @@ function populateVoices(retries = 10) {
         return;
     }
 
-    voices.forEach((voice, index) => {
+    voices.forEach(voice => {
         const option = document.createElement('option');
-        option.value = index;
         option.textContent = `${voice.name} (${voice.lang})${voice.default ? ' [default]' : ''}`;
+        option.setAttribute('data-name', voice.name);
+        option.setAttribute('data-lang', voice.lang);
         voiceSelect.appendChild(option);
     });
 
-    const savedVoiceIndex = localStorage.getItem('selectedVoiceIndex');
-    if (savedVoiceIndex && voices[savedVoiceIndex]) {
-        voiceSelect.value = savedVoiceIndex;
+    const savedVoiceName = localStorage.getItem('selectedVoiceName');
+    if (savedVoiceName) {
+        for (let i = 0; i < voiceSelect.options.length; i++) {
+            if (voiceSelect.options[i].getAttribute('data-name') === savedVoiceName) {
+                voiceSelect.selectedIndex = i;
+                break;
+            }
+        }
     }
 }
 
 voiceSelect.addEventListener('change', () => {
-    localStorage.setItem('selectedVoiceIndex', voiceSelect.value);
+    const selectedOption = voiceSelect.selectedOptions[0];
+    if (selectedOption) {
+        const name = selectedOption.getAttribute('data-name');
+        localStorage.setItem('selectedVoiceName', name);
+    }
 });
 
-if ('speechSynthesis' in window) {
-    speechSynthesis.onvoiceschanged = populateVoices;
-    populateVoices();
-} else {
-    console.warn("Speech synthesis not supported in this browser.");
+if (synth.onvoiceschanged !== undefined) {
+    synth.onvoiceschanged = populateVoiceList;
 }
+populateVoiceList();
 
 export async function toggleRead(filePath, button) {
     logToggleStart();
 
     if (isPlaying) {
         logCancelSpeech();
-        speechSynthesis.cancel();
+        synth.cancel();
         isPlaying = false;
         if (currentButton) currentButton.textContent = '▶️ Play';
         return;
@@ -121,11 +100,18 @@ export async function toggleRead(filePath, button) {
         logCleanedText(text);
 
         currentUtterance = new SpeechSynthesisUtterance(text);
-        const selectedVoice = voices[voiceSelect.value];
-        if (selectedVoice) {
-            currentUtterance.voice = selectedVoice;
+
+        const selectedOption = voiceSelect.selectedOptions[0];
+        if (selectedOption) {
+            const selectedName = selectedOption.getAttribute('data-name');
+            const selectedVoice = voices.find(voice => voice.name === selectedName);
+            if (selectedVoice) {
+                currentUtterance.voice = selectedVoice;
+                logVoiceInfo(selectedVoice);
+            } else {
+                console.warn("Voice not found in current voice list.");
+            }
         }
-        logVoiceInfo(selectedVoice);
 
         currentUtterance.onend = () => {
             logSpeechEnded();
@@ -134,7 +120,7 @@ export async function toggleRead(filePath, button) {
         };
 
         logSpeechStarted();
-        speechSynthesis.speak(currentUtterance);
+        synth.speak(currentUtterance);
         isPlaying = true;
         button.textContent = '⏸ Pause';
         currentButton = button;
