@@ -25,7 +25,30 @@ window.addEventListener('touchstart', () => {
     }
 }, { once: true });
 
-function populateVoices() {
+function populateVoices(retries = 10) {
+    const allVoices = speechSynthesis.getVoices();
+
+    voices = allVoices.filter(voice =>
+        voice.lang.startsWith('en') &&
+        !['zira', 'mark', 'david', 'hong kong', 'hongkong', 'india', 'kenya', 'nigeria', 'philippines', 'singapore', 'south africa', 'tanzania']
+            .some(bad => voice.name.toLowerCase().includes(bad))
+    );
+
+    voiceSelect.innerHTML = '';
+
+    if (voices.length === 0) {
+        if (retries > 0) {
+            console.warn("No voices yet, retrying populateVoices...");
+            return setTimeout(() => populateVoices(retries - 1), 200);
+        }
+
+        const option = document.createElement('option');
+        option.disabled = true;
+        option.selected = true;
+        option.textContent = 'No voices available';
+        voiceSelect.appendChild(option);
+        return;
+    }
     voices = speechSynthesis.getVoices()
         .filter(voice =>
             voice.lang.startsWith('en') &&
