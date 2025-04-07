@@ -1,3 +1,16 @@
+// speech.js
+import {
+    logToggleStart,
+    logCancelSpeech,
+    logFetchingFile,
+    logTextFetched,
+    logCleanedText,
+    logVoiceInfo,
+    logSpeechStarted,
+    logSpeechEnded,
+    logError
+} from './debugLogger.js';
+
 let voices = [];
 let currentUtterance = null;
 let isPlaying = false;
@@ -36,8 +49,11 @@ speechSynthesis.onvoiceschanged = populateVoices;
 populateVoices();
 
 // Toggle reading of article text
-async function toggleRead(filePath, button) {
+export async function toggleRead(filePath, button) {
+    logToggleStart();
+
     if (isPlaying) {
+        logCancelSpeech();
         speechSynthesis.cancel();
         isPlaying = false;
         if (currentButton) currentButton.textContent = '▶️ Play';
@@ -45,26 +61,36 @@ async function toggleRead(filePath, button) {
     }
 
     try {
+        logFetchingFile(filePath);
+
         const response = await fetch(filePath);
         let text = await response.text();
+        logTextFetched(text);
+
         text = cleanTextForSpeech(text);
+        logCleanedText(text);
+
         currentUtterance = new SpeechSynthesisUtterance(text);
 
         const selectedVoice = voices[voiceSelect.value];
         if (selectedVoice) {
             currentUtterance.voice = selectedVoice;
         }
+        logVoiceInfo(selectedVoice);
 
         currentUtterance.onend = () => {
+            logSpeechEnded();
             isPlaying = false;
             if (currentButton) currentButton.textContent = '▶️ Play';
         };
 
+        logSpeechStarted();
         speechSynthesis.speak(currentUtterance);
         isPlaying = true;
         button.textContent = '⏸ Pause';
         currentButton = button;
     } catch (error) {
-        alert("Failed to load article: " + error);
+        logError(error);
+        alert('Failed to load article: ' + error);
     }
 }
