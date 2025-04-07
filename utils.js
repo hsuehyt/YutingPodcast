@@ -1,5 +1,5 @@
 // Utility to clean up markdown and unwanted characters for speech synthesis
-function cleanTextForSpeech(text) {
+export function cleanTextForSpeech(text) {
     return text
         .replace(/`{1,3}[^`]*`{1,3}/g, '')
         .replace(/!\[.*?\]\(.*?\)/g, '')
@@ -10,3 +10,4 @@ function cleanTextForSpeech(text) {
         .replace(/\s{2,}/g, ' ')
         .trim();
 }
+
