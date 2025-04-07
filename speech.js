@@ -1,4 +1,3 @@
-// speech.js
 import {
     logToggleStart,
     logCancelSpeech,
@@ -19,7 +18,15 @@ let isPlaying = false;
 let currentButton = null;
 const voiceSelect = document.getElementById('voiceSelect');
 
-// Resume audio context on mobile (Android Chrome workaround)
+// Resume speech synthesis engine on desktop or mobile user interaction
+function unlockAudioContext() {
+    if (speechSynthesis && speechSynthesis.paused) {
+        speechSynthesis.resume();
+        console.log("speechSynthesis resumed");
+    }
+}
+window.addEventListener('click', unlockAudioContext, { once: true });
+window.addEventListener('touchstart', unlockAudioContext, { once: true });
 window.addEventListener('touchstart', () => {
     if (speechSynthesis && speechSynthesis.paused) {
         speechSynthesis.resume();
@@ -43,6 +50,23 @@ function populateVoices(retries = 10) {
             return setTimeout(() => populateVoices(retries - 1), 200);
         }
 
+        const option = document.createElement('option');
+        option.disabled = true;
+        option.selected = true;
+        option.textContent = 'No voices available';
+        voiceSelect.appendChild(option);
+        return;
+    }
+    voices = speechSynthesis.getVoices()
+        .filter(voice =>
+            voice.lang.startsWith('en') &&
+            !['zira', 'mark', 'david', 'hong kong', 'hongkong', 'india', 'kenya', 'nigeria', 'philippines', 'singapore', 'south africa', 'tanzania']
+                .some(bad => voice.name.toLowerCase().includes(bad))
+        );
+
+    voiceSelect.innerHTML = '';
+
+    if (voices.length === 0) {
         console.warn("No available voices — speechSynthesis may not be supported or initialized.");
         const option = document.createElement('option');
         option.disabled = true;
@@ -70,9 +94,7 @@ voiceSelect.addEventListener('change', () => {
 });
 
 if ('speechSynthesis' in window) {
-    if (speechSynthesis.getVoices().length === 0) {
-        speechSynthesis.onvoiceschanged = () => populateVoices(0);
-    }
+    speechSynthesis.onvoiceschanged = populateVoices;
     populateVoices();
 } else {
     console.warn("Speech synthesis not supported in this browser.");
@@ -91,7 +113,6 @@ export async function toggleRead(filePath, button) {
 
     try {
         logFetchingFile(filePath);
-
         const response = await fetch(filePath);
         let text = await response.text();
         logTextFetched(text);
@@ -100,7 +121,6 @@ export async function toggleRead(filePath, button) {
         logCleanedText(text);
 
         currentUtterance = new SpeechSynthesisUtterance(text);
-
         const selectedVoice = voices[voiceSelect.value];
         if (selectedVoice) {
             currentUtterance.voice = selectedVoice;
