@@ -11,6 +11,8 @@ import {
     logError
 } from './debugLogger.js';
 
+import { cleanTextForSpeech } from './utils.js';
+
 let voices = [];
 let currentUtterance = null;
 let isPlaying = false;

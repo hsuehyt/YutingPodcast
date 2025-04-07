@@ -1,3 +1,7 @@
+// articles.js
+
+import { toggleRead } from './speech.js';
+
 // Fetch article list from GitHub and render them in the container
 async function loadArticles() {
     const container = document.getElementById('articlesContainer');
@@ -18,10 +22,17 @@ async function loadArticles() {
 
                 const articleDiv = document.createElement('div');
                 articleDiv.className = 'article';
-                articleDiv.innerHTML = `
-                    <button onclick="toggleRead('${file.path}', this)">▶️ Play</button>
-                    <div class="title">${title}</div>
-                `;
+
+                const playButton = document.createElement('button');
+                playButton.textContent = '▶️ Play';
+                playButton.addEventListener('click', () => toggleRead(file.path, playButton));
+
+                const titleDiv = document.createElement('div');
+                titleDiv.className = 'title';
+                titleDiv.textContent = title;
+
+                articleDiv.appendChild(playButton);
+                articleDiv.appendChild(titleDiv);
                 container.appendChild(articleDiv);
             });
     } catch (err) {
@@ -31,4 +42,3 @@ async function loadArticles() {
 }
 
 // Run it on load
-loadArticles();
