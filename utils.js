@@ -10,4 +10,3 @@ export function cleanTextForSpeech(text) {
         .replace(/\s{2,}/g, ' ')
         .trim();
 }
-
