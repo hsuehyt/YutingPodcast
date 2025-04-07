@@ -42,3 +42,4 @@ async function loadArticles() {
 }
 
 // Run it on load
+loadArticles();
